@@ -38,9 +38,10 @@ int main() {
 
         // Verificación de límites
         if (x < 0 || x >= XTAM || y < 0 || y >= YTAM) {
+            color(ROJO); //Color rojito
             texto(10, 10, "Game Over :c");
             refresca();
-            espera(2000); // Esperamos  2 segs para que se lea el mensaje 
+            espera(2000); // Esperamos  2 segs para que se lea el mensaje
             break; // Salir
         }
 
