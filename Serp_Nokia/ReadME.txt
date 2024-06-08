@@ -1,3 +1,0 @@
-#VERSIÓ BETA
-
-
