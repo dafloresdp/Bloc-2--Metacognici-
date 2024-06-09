@@ -12,11 +12,17 @@ const int SZ = 12;
 const int LONGITUD_INICIAL = 6; // Longitud inicial de la serpiente
 const int CRECIMIENTO = 5; // Número de segmentos que crece la serpiente al comer comida
 const int PUNTOS_POR_COMIDA = 12; // Puntos por cada comida
-const int PUNTOS_POR_AZULL = 22; //Puntos de la comida que te hace correr mucho
+const int PUNTOS_POR_AZULL = 22; // Puntos de la comida que te hace correr mucho
 const int DURACION_RAPIDA = 500; // Duración del efecto rápido en ciclos
 const int COMIDA_AZUL_FRECUENCIA = 5; // Frecuencia de aparición de la comida azul
 const int DURACION_COMIDA_AZUL = 5000; // Duración de la comida azul en milisegundos
 const int DURACION_COMIDA_RAPIDA = 7000; // Duración de la comida rápida en milisegundos
+const int PUNTOS_POR_COMIDA_BLANCA = -8; // Puntos que quita la comida blanca
+const int DURACION_COMIDA_BLANCA = 12000; // Duración de la comida blanca en milisegundos
+const int DURACION_EFECTO_BLANCO = 15000; // Duración del efecto de ralentización en milisegundos
+const int PUNTOS_POR_SERPIENTE_MUERTA = 160; // Puntos por la comida "serpiente muerta"
+const int DURACION_SERPIENTE_MUERTA = 4000; // Duración de la comida "serpiente muerta" en milisegundos
+const int FRECUENCIA_SERPIENTE_MUERTA = 10; // Frecuencia de aparición de la comida "serpiente muerta"
 
 struct Punto {
     int x, y;
@@ -48,6 +54,8 @@ int main() {
     vector<pair<int, int>> serpiente;
     Punto comida = al_azar();
     Punto comida_rapida = { -1, -1 }; // Inicialmente fuera del tablero
+    Punto comida_blanca = { -1, -1 }; // Inicialmente fuera del tablero
+    Punto serpiente_muerta = { -1, -1 }; // Inicialmente fuera del tablero
     int puntuacion = 0; // Variable para almacenar la puntuación
     int comida_amarilla_contador = 0; // Contador para la comida amarilla
     int x = 30, y = 20; // Cabecita
@@ -60,6 +68,9 @@ int main() {
     int ciclos_rapidos = 0; // Contador de ciclos rápidos
     int t = tecla();
     clock_t inicio_comida_rapida = 0; // Tiempo de inicio de la comida rápida
+    clock_t inicio_comida_blanca = 0; // Tiempo de inicio de la comida blanca
+    clock_t inicio_efecto_blanco = 0; // Tiempo de inicio del efecto de ralentización
+    clock_t inicio_serpiente_muerta = 0; // Tiempo de inicio de la comida "serpiente muerta"
     bool pausa = false; // Variable para controlar la pausa
     bool tecla_arriba_pulsada = false; // Variable para detectar si la tecla de arriba fue pulsada una vez
     bool continuar_juego = true; // Variable para controlar si el juego debe continuar
@@ -69,7 +80,7 @@ int main() {
         ciclos_rapidos++;
         if (ciclos_rapidos == DURACION_RAPIDA) {
             ciclos_rapidos = 0;
-            retraso = 8; // Restaurar el retraso original
+            retraso = 8; // Restaurar el retraso original si no hay efecto de comida blanca
         }
 
         // Proceso de teclas, lógica y tinta del juego
@@ -81,7 +92,7 @@ int main() {
                 } else {
                     // Si la tecla de arriba ya ha sido pulsada una vez
                     // verifica si ha sido pulsada dos veces en un intervalo de 1 segundo
-                    if ((clock() - tiempo_anterior_arriba) / CLOCKS_PER_SEC< 0.0000001) {
+                    if ((clock() - tiempo_anterior_arriba) / CLOCKS_PER_SEC < 0.0000001) {
                         // Si la segunda pulsación ocurre dentro de 1 segundo, pausa el juego
                         pausa = true; // Activa la pausa
                         tecla_arriba_pulsada = false; // Reinicia el estado de la tecla pulsada
@@ -107,8 +118,7 @@ int main() {
 
                 // Añadir nueva posición de la cabeza
                 serpiente.insert(serpiente.begin(), {x, y});
-                //
-                 // Verificar si la serpiente ha comido la comida normal
+                // Verificar si la serpiente ha comido la comida normal
                 if (serpiente[0].first == comida.x && serpiente[0].second == comida.y) {
                     for (int i = 0; i < CRECIMIENTO; ++i) {
                         serpiente.push_back(serpiente.back()); // Crece la serpiente
@@ -122,11 +132,31 @@ int main() {
                         comida_rapida = al_azar();
                         inicio_comida_rapida = clock(); // Registrar el tiempo de inicio de la comida rápida
                     }
+
+                    // Generar comida blanca cada 3 comidas amarillas
+                    if (comida_amarilla_contador % 3 == 0) {
+                        comida_blanca = al_azar();
+                        inicio_comida_blanca = clock(); // Registrar el tiempo de inicio de la comida blanca
+                    }
+
+                    // Generar comida "serpiente muerta" cada FRECUENCIA_SERPIENTE_MUERTA comidas amarillas
+                    if (comida_amarilla_contador % FRECUENCIA_SERPIENTE_MUERTA == 0) {
+                        serpiente_muerta = al_azar();
+                        inicio_serpiente_muerta = clock(); // Registrar el tiempo de inicio de la comida "serpiente muerta"
+                    }
                 } else if (serpiente[0].first == comida_rapida.x && serpiente[0].second == comida_rapida.y) {
                     retraso = 5; // Reducir el retraso
                     ciclos_rapidos = 0; // Reiniciar el contador de ciclos rápidos
                     puntuacion += PUNTOS_POR_AZULL;
                     comida_rapida = { -1, -1 }; // Mover comida rápida fuera del tablero
+                } else if (serpiente[0].first == comida_blanca.x && serpiente[0].second == comida_blanca.y) {
+                    puntuacion += PUNTOS_POR_COMIDA_BLANCA; // Quitar puntos
+                    retraso = 15; // Aumentar el retraso
+                    inicio_efecto_blanco = clock(); // Registrar el tiempo de inicio del efecto
+                    comida_blanca = { -1, -1 }; // Mover comida blanca fuera del tablero
+                } else if (serpiente[0].first == serpiente_muerta.x && serpiente[0].second == serpiente_muerta.y) {
+                    puntuacion += PUNTOS_POR_SERPIENTE_MUERTA; // Incrementar puntuación
+                    serpiente_muerta = { -1, -1 }; // Mover la comida "serpiente muerta" fuera del tablero
                 } else {
                     // Eliminar el último segmento para mantener la longitud
                     serpiente.pop_back();
@@ -150,6 +180,21 @@ int main() {
             if (comida_rapida.x != -1 && comida_rapida.y != -1 && (clock() - inicio_comida_rapida) > DURACION_COMIDA_RAPIDA) {
                 comida_rapida = { -1, -1 }; // Mover comida rápida fuera del tablero
             }
+
+            // Verificación del tiempo de la comida blanca
+            if (comida_blanca.x != -1 && comida_blanca.y != -1 && (clock() - inicio_comida_blanca) > DURACION_COMIDA_BLANCA) {
+                comida_blanca = { -1, -1 }; // Mover comida blanca fuera del tablero
+            }
+
+            // Verificación del tiempo del efecto de la comida blanca
+            if ((clock() - inicio_efecto_blanco) > DURACION_EFECTO_BLANCO) {
+                retraso = 8; // Restaurar el retraso original
+            }
+
+            // Verificación del tiempo de la comida "serpiente muerta"
+            if (serpiente_muerta.x != -1 && serpiente_muerta.y != -1 && (clock() - inicio_serpiente_muerta) > DURACION_SERPIENTE_MUERTA) {
+                serpiente_muerta = { -1, -1 }; // Mover comida "serpiente muerta" fuera del tablero
+            }
         }
 
         // Verificar si el juego está en pausa y esperar a que se desactive la pausa
@@ -158,7 +203,6 @@ int main() {
             if (t == ARRIBA) {
                 if (!tecla_arriba_pulsada) {
                     tecla_arriba_pulsada = true;
-
                 } else {
                     pausa = false; // Desactiva la pausa
                     tecla_arriba_pulsada = false; // Reinicia el estado de la tecla pulsada
@@ -185,6 +229,14 @@ int main() {
         if (comida_rapida.x != -1 && comida_rapida.y != -1) {
             cuadrado(comida_rapida.x, comida_rapida.y, AZUL);
         }
+        // Dibujar la comida blanca si está en el tablero
+        if (comida_blanca.x != -1 && comida_blanca.y != -1) {
+            cuadrado(comida_blanca.x, comida_blanca.y, BLANCO);
+        }
+        // Dibujar la comida "serpiente muerta" si está en el tablero
+        if (serpiente_muerta.x != -1 && serpiente_muerta.y != -1) {
+            cuadrado(serpiente_muerta.x, serpiente_muerta.y, ROJO);
+        }
 
         // Dibujar la puntuación
         color(BLANCO);
@@ -199,4 +251,3 @@ int main() {
 
     return 0;
 }
-
