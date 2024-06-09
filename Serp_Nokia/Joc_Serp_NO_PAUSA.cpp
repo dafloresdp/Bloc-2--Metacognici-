@@ -155,7 +155,7 @@ int main() {
                 int centro_y = (YTAM * SZ - texto_alto) / 2;
                 texto(centro_x, centro_y, "Game Over :c");
                 refresca();
-                espera(2000); // Espera 2 segundos para que se pueda leer el mensaje
+                espera(3000); // Espera 3 segundos para que se pueda leer el mensaje
                 break; // Salir
             }
 
