@@ -12,6 +12,7 @@ const int SZ = 12;
 const int LONGITUD_INICIAL = 6; // Longitud inicial de la serpiente
 const int CRECIMIENTO = 5; // Número de segmentos que crece la serpiente al comer comida
 const int PUNTOS_POR_COMIDA = 12; // Puntos por cada comida
+const int PUNTOS_POR_AZULL = 22; //Puntos de la comida que te hace correr mucho
 const int DURACION_RAPIDA = 500; // Duración del efecto rápido en ciclos
 const int COMIDA_AZUL_FRECUENCIA = 5; // Frecuencia de aparición de la comida azul
 const int DURACION_COMIDA_AZUL = 5000; // Duración de la comida azul en milisegundos
@@ -124,6 +125,7 @@ int main() {
                 } else if (serpiente[0].first == comida_rapida.x && serpiente[0].second == comida_rapida.y) {
                     retraso = 5; // Reducir el retraso
                     ciclos_rapidos = 0; // Reiniciar el contador de ciclos rápidos
+                    puntuacion += PUNTOS_POR_AZULL;
                     comida_rapida = { -1, -1 }; // Mover comida rápida fuera del tablero
                 } else {
                     // Eliminar el último segmento para mantener la longitud
@@ -197,3 +199,4 @@ int main() {
 
     return 0;
 }
+
