@@ -13,7 +13,7 @@
 
 -Pauek: Gràcies per crear *Miniwin*. Sense aquesta no podria haver fet aquest joc tan entretingut.
 
--ChatGPT: Gràcies per ajudarme a fer el menú pausa i afegir comentaris avorrits al codi.
+-ChatGPT: Gràcies per ajudarme a fer el menú pausa i per afegir alguns comentaris avorrits al codi.
 
 
 -Àlex Miró: Moltes gràcies per proporcionar material per fer el joc, i per aquest curs tan màgic de programació. Ha sigut tota una experiència!
