@@ -10,27 +10,40 @@ const int XTAM = 65, YTAM = 40;
 const int SZ = 12;
 const int LONGITUD_INICIAL = 14; // Longitud inicial de la serpiente
 
+struct Coordenada {
+    int x, y;
+};
+
 void cuadrado(int x, int y, int c) {
     color(c);
     rectangulo_lleno(x * SZ, y * SZ, (x + 1) * SZ - 1, (y + 1) * SZ - 1);
 }
 
-bool hay_choque(const vector<pair<int, int>>& serpiente) {
+bool hay_choque(const vector<Coordenada>& serpiente) {
     // Ordenar el vector de segmentos de la serpiente
-    vector<pair<int, int>> serpiente_ordenada = serpiente;
-    sort(serpiente_ordenada.begin() + 1, serpiente_ordenada.end()); // +1 para no incluir la cabeza
+    vector<Coordenada> serpiente_ordenada = serpiente;
+    sort(serpiente_ordenada.begin() + 1, serpiente_ordenada.end(), [](const Coordenada& a, const Coordenada& b) {
+        if (a.x != b.x) return a.x < b.x;
+        return a.y < b.y;
+    }); // +1 para no incluir la cabeza
 
     // Búsqueda binaria para verificar si la cabeza choca con el cuerpo
-    pair<int, int> cabeza = serpiente[0];
-    return binary_search(serpiente_ordenada.begin() + 1, serpiente_ordenada.end(), cabeza);
+    Coordenada cabeza = serpiente[0];
+    return binary_search(serpiente_ordenada.begin() + 1, serpiente_ordenada.end(), cabeza, [](const Coordenada& a, const Coordenada& b) {
+        if (a.x != b.x) return a.x < b.x;
+        return a.y < b.y;
+    });
 }
 
 int main() {
     vredimensiona(XTAM * SZ, YTAM * SZ);
-    vector<pair<int, int>> serpiente;
+    vector<Coordenada> serpiente;
     int x = 30, y = 20; // Cabecita
     for (int i = 0; i < LONGITUD_INICIAL; ++i) {
-        serpiente.push_back({x - i, y});
+        Coordenada segmento;
+        segmento.x = x - i;
+        segmento.y = y;
+        serpiente.push_back(segmento);
     }
 
     int vx = 1, vy = 0; // Speed
@@ -55,7 +68,10 @@ int main() {
             retraso = 0;
 
             // Añadir nueva posición de la cabeza
-            serpiente.insert(serpiente.begin(), {x, y});
+            Coordenada nuevo_segmento;
+            nuevo_segmento.x = x;
+            nuevo_segmento.y = y;
+            serpiente.insert(serpiente.begin(), nuevo_segmento);
             // Eliminar el último segmento para mantener la longitud
             if (serpiente.size() > LONGITUD_INICIAL) {
                 serpiente.pop_back();
@@ -74,12 +90,12 @@ int main() {
         borra();
         // Dibujar la serpiente
         bool esCabeza = true;
-        for (auto segmento : serpiente) {
+        for (int i = 0; i < serpiente.size(); ++i) {
             if (esCabeza) {
-                cuadrado(segmento.first, segmento.second, ROJO); // La cabeza es roja
+                cuadrado(serpiente[i].x, serpiente[i].y, ROJO); // La cabeza es roja
                 esCabeza = false;
             } else {
-                cuadrado(segmento.first, segmento.second, VERDE); // El cuerpo es verde
+                cuadrado(serpiente[i].x, serpiente[i].y, VERDE); // El cuerpo es verde
             }
         }
         // Pinta todo
